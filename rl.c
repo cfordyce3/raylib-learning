@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <math.h>
 #include "raylib.h"
 
 int main () {
@@ -25,6 +26,7 @@ int main () {
     } Direction;
 
     // Player starts in middle of screen
+    const float circleRadius = 16.0f;
     Vector2 playerPosition = {(float)screenWidth / 2.0f, (float)screenHeight / 2.0f};
     // Player starts facing right
     Direction playerDirection = RIGHT;
@@ -35,7 +37,6 @@ int main () {
 
     const float speedTarget = 200.0f;
     float currentSpeed = 0;
-    const float circleRadius = 16.0f;
 
 
     while (!WindowShouldClose()) {
@@ -43,7 +44,7 @@ int main () {
         // --------------------------------------------------
 
         // keys not pressed together
-        if ( 
+        if (
                 ((IsKeyDown(KEY_UP) || IsKeyDown(KEY_W)) && (IsKeyDown(KEY_S) || IsKeyDown(KEY_DOWN))) ||
                 ((IsKeyDown(KEY_LEFT) || IsKeyDown(KEY_A)) && (IsKeyDown(KEY_RIGHT) || IsKeyDown(KEY_D)))
         ) { // speed is zero and thus is not moving
@@ -51,7 +52,7 @@ int main () {
             playerMoving = false;
         }
         else if (
-                IsKeyDown(KEY_W) || IsKeyDown(KEY_UP) || 
+                IsKeyDown(KEY_W) || IsKeyDown(KEY_UP) ||
                 IsKeyDown(KEY_A) || IsKeyDown(KEY_LEFT) ||
                 IsKeyDown(KEY_S) || IsKeyDown(KEY_DOWN) ||
                 IsKeyDown(KEY_D) || IsKeyDown(KEY_RIGHT)
@@ -65,9 +66,9 @@ int main () {
         if (!playerMoving) playerSpeed.x = 0; playerSpeed.y = 0;
         // movement keys
         // TODO: add IsKeyPressed event to properly handle speed
-        //       such that when you press a key once, it adds the directional 
+        //       such that when you press a key once, it adds the directional
         //       speed to the total (two keys pressed = more speed)
-        if (IsKeyDown(KEY_UP) || IsKeyDown(KEY_W)) { 
+        if (IsKeyDown(KEY_UP) || IsKeyDown(KEY_W)) {
             playerPosition.y -= deltaMoveSpeed;
             currentSpeed = speedTarget;
             playerSpeed.y = deltaMoveSpeed;
@@ -120,6 +121,10 @@ int main () {
 
             // Draw player to screen
             DrawCircleV(playerPosition, circleRadius, RED);
+            // TODO: fix this so that there is a line pointing to the player's direction
+            float endPointX = playerPosition.x + circleRadius + cos(DEG2RAD*(float)playerDirection);
+            float endPointY = playerPosition.y + circleRadius + sin(DEG2RAD*(float)playerDirection);
+            DrawLine(playerPosition.x, playerPosition.y, endPointX, endPointY, ORANGE);
 
             // Draw FPS
             //const char *fpsText = 0;
@@ -127,7 +132,7 @@ int main () {
             //else fpsText = TextFormat("FPS: %i", GetFPS());
             //DrawText(fpsText, 10, 10, 20, DARKGRAY);
 
-            // Player speed 
+            // Player speed
             // TODO: get actual speed of player
             char playerMovingText = 'N';
             (playerMoving) ? playerMovingText = 'Y' : 'N';
