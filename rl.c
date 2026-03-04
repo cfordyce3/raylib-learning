@@ -31,7 +31,6 @@ int main () {
     // Player x and y speed start at 0
     Vector2 playerSpeed = { 0.0f, 0.0f };
     bool playerMoving = false;
-    
 
 
     const float speedTarget = 200.0f;
@@ -59,12 +58,8 @@ int main () {
         ) playerMoving = true;
         else currentSpeed = 0;
 
-        // TODO: figure this math out
         float deltaMoveSpeed = GetFrameTime() * speedTarget;
-        float speedDiff = speedTarget - deltaMoveSpeed;
-        float speedFinal = speedTarget + speedDiff;
 
-        //printf("target:\t%f\ndeltaspeed:\t%f\nfinal:\t%f\n", speedTarget, deltaMoveSpeed, speedFinal);
         printf("speed x:\t%f\nspeed y:\t%f\n", playerSpeed.x, playerSpeed.y);
 
         if (!playerMoving) playerSpeed.x = 0; playerSpeed.y = 0;
@@ -144,15 +139,15 @@ int main () {
             // player direction
             const char* directionText = "Right";
             switch (playerDirection) {
-                case 90: directionText = "Up"; break;
-                case 270: directionText = "Down"; break;
-                case 180: directionText = "Left"; break;
-                case 0: directionText = "Right"; break;
-                case 135: directionText = "Up Left"; break;
-                case 45: directionText = "Up Right"; break;
-                case 225: directionText = "Down Left"; break;
-                case 315: directionText = "Down Right"; break;
-                default: directionText = "Error"; break;
+                case UP: directionText = "Up"; break;
+                case DOWN: directionText = "Down"; break;
+                case LEFT: directionText = "Left"; break;
+                case RIGHT: directionText = "Right"; break;
+                case UPLEFT: directionText = "Up Left"; break;
+                case UPRIGHT: directionText = "Up Right"; break;
+                case DOWNLEFT: directionText = "Down Left"; break;
+                case DOWNRIGHT: directionText = "Down Right"; break;
+                default: directionText = "Invalid Direction"; break;
             }
             DrawText(TextFormat("Player Direction: %s", directionText), 10, 40, 20, BLUE);
 
