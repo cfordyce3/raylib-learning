@@ -2,28 +2,30 @@
 #include <math.h>
 #include "raylib.h"
 
+// direction enum
+typedef enum {
+    UP = 90,
+    DOWN = 270,
+    LEFT = 180,
+    RIGHT = 0,
+    UPLEFT = 135,
+    UPRIGHT = 45,
+    DOWNLEFT = 225,
+    DOWNRIGHT = 315
+} Direction;
+
+// calculate the line end via the player position and direction
+Vector2 calcLineEnd (Vector2 pPos, float r, Direction d);
+
 int main () {
     // Initialization
     const int screenWidth = 800;
     const int screenHeight = 600;
 
-
     InitWindow(screenWidth, screenHeight, "Raylib Learning Environment");
     SetExitKey(KEY_CAPS_LOCK); // must be after the init window
 
     SetTargetFPS(240);
-
-    // player facing
-    typedef enum {
-        UP = 90,
-        DOWN = 270,
-        LEFT = 180,
-        RIGHT = 0,
-        UPLEFT = 135,
-        UPRIGHT = 45,
-        DOWNLEFT = 225,
-        DOWNRIGHT = 315
-    } Direction;
 
     // Player starts in middle of screen
     const float circleRadius = 16.0f;
@@ -34,15 +36,37 @@ int main () {
     Vector2 playerSpeed = { 0.0f, 0.0f };
     bool playerMoving = false;
 
+    // player direction line init
+    Vector2 lineStart = playerPosition;//{playerPosition.x, playerPosition.y};
+    Vector2 lineEnd = {playerPosition.x + circleRadius, playerPosition.y};
 
     const float speedTarget = 200.0f;
     float currentSpeed = 0;
-
+    float deltaMoveSpeed = 0;
 
     while (!WindowShouldClose()) {
         // Update
         // --------------------------------------------------
+        // move speed via delta
+        deltaMoveSpeed = GetFrameTime() * speedTarget;
 
+        // player direction logic
+        //lineStart.x = playerPosition.x; lineStart.y = playerPosition.y;
+        lineStart = playerPosition;
+        lineEnd = calcLineEnd(playerPosition, circleRadius, playerDirection);
+
+        const char* directionText = "Right";
+        switch (playerDirection) {
+            case UP: directionText = "Up"; break;
+            case DOWN: directionText = "Down"; break;
+            case LEFT: directionText = "Left"; break;
+            case RIGHT: directionText = "Right"; break;
+            case UPLEFT: directionText = "Up Left"; break;
+            case UPRIGHT: directionText = "Up Right"; break;
+            case DOWNLEFT: directionText = "Down Left"; break;
+            case DOWNRIGHT: directionText = "Down Right"; break;
+            default: directionText = "Invalid Direction"; break;
+        }
         // keys not pressed together
         if (
                 ((IsKeyDown(KEY_UP) || IsKeyDown(KEY_W)) && (IsKeyDown(KEY_S) || IsKeyDown(KEY_DOWN))) ||
@@ -57,11 +81,10 @@ int main () {
                 IsKeyDown(KEY_S) || IsKeyDown(KEY_DOWN) ||
                 IsKeyDown(KEY_D) || IsKeyDown(KEY_RIGHT)
         ) playerMoving = true;
-        else currentSpeed = 0;
+        else playerMoving = false; currentSpeed = 0;
 
-        float deltaMoveSpeed = GetFrameTime() * speedTarget;
 
-        printf("speed x:\t%f\nspeed y:\t%f\n", playerSpeed.x, playerSpeed.y);
+        //printf("speed x:\t%f\nspeed y:\t%f\n", playerSpeed.x, playerSpeed.y);
 
         if (!playerMoving) playerSpeed.x = 0; playerSpeed.y = 0;
         // movement keys
@@ -121,10 +144,21 @@ int main () {
 
             // Draw player to screen
             DrawCircleV(playerPosition, circleRadius, RED);
+
             // TODO: fix this so that there is a line pointing to the player's direction
-            float endPointX = playerPosition.x + circleRadius + cos(DEG2RAD*(float)playerDirection);
-            float endPointY = playerPosition.y + circleRadius + sin(DEG2RAD*(float)playerDirection);
-            DrawLine(playerPosition.x, playerPosition.y, endPointX, endPointY, ORANGE);
+            if (false) {
+                printf("%.2f\t%.2f\t%.2f\t", playerPosition.x, circleRadius, cos(DEG2RAD*(float)playerDirection));
+                printf("%.2f\t%.2f\t%.2f\n", playerPosition.y, circleRadius, sin(DEG2RAD*(float)playerDirection));
+            }
+
+            lineStart.x = playerPosition.x; lineStart.y = playerPosition.y;
+            DrawLineEx(lineStart, lineEnd, 3.0f, GREEN);
+
+            //if (playerMoving) {
+            //    printf("direction: %d\n", playerDirection);
+            //    printf("start x: %f\tstart y: %f\n", lineStart.x, lineStart.y);
+            //    printf("end x: %f\tend y: %f\n", endPointX, endPointY);
+            //}
 
             // Draw FPS
             //const char *fpsText = 0;
@@ -142,19 +176,7 @@ int main () {
             DrawText(TextFormat("Player Position: \nX: %f\nY: %f", playerPosition.x, playerPosition.y), 10, 70, 20, GREEN);
 
             // player direction
-            const char* directionText = "Right";
-            switch (playerDirection) {
-                case UP: directionText = "Up"; break;
-                case DOWN: directionText = "Down"; break;
-                case LEFT: directionText = "Left"; break;
-                case RIGHT: directionText = "Right"; break;
-                case UPLEFT: directionText = "Up Left"; break;
-                case UPRIGHT: directionText = "Up Right"; break;
-                case DOWNLEFT: directionText = "Down Left"; break;
-                case DOWNRIGHT: directionText = "Down Right"; break;
-                default: directionText = "Invalid Direction"; break;
-            }
-            DrawText(TextFormat("Player Direction: %s", directionText), 10, 40, 20, BLUE);
+            DrawText(TextFormat("Player Direction: %s\t(%d deg)", directionText, playerDirection), 10, 40, 20, BLUE);
 
         EndDrawing(); // end drawing and end quasi block
     }
@@ -163,3 +185,21 @@ int main () {
 
     return 0;
 }
+
+Vector2 calcLineEnd (Vector2 pPos, float r, Direction d) {
+    Vector2 total = {};
+    printf("pos: %f, %f\tr: %f\td: %d\n", pPos.x, pPos.y, r, d);
+    printf("r * cos(d): %f\tr * sin(d): %f\n", (r*cos(d)), (r*sin(d)));
+    switch (d) {
+        case UP: total.x = pPos.x; total.y = pPos.y - r; break;
+        case DOWN: total.x = pPos.x; total.y = pPos.y + r; break;
+        case LEFT: total.x = pPos.x - r; total.y = pPos.y; break;
+        case RIGHT: total.x = pPos.x + r; total.y = pPos.y; break;
+        case UPRIGHT: total.x = pPos.x + (r * cos(d)); total.y = pPos.y + (r * sin(d)); break;
+        case UPLEFT: total.x = pPos.x + (r * cos(d)); total.y = pPos.y + (r * sin(d)); break;
+        default: total.x = pPos.x + r; total.y = pPos.y; break;
+    }
+    return total;
+}
+//playerPosition.x + circleRadius + cos((float)playerDirection)
+//playerPosition.y + circleRadius + sin((float)playerDirection)};
